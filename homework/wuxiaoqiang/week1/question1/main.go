@@ -2,28 +2,35 @@ package main
 
 import (
 	"fmt"
-	"sync"
+	"time"
 )
 
 // 两个协程交替打印数字1-100
-var wg sync.WaitGroup
 
 func main() {
 	fmt.Println("beginning of main")
-	for i := 0; i < 2; i++ {
-		wg.Add(1)
-		go printNumbers()
-	}
-	wg.Wait()
+	channel := make(chan int)
 
+	go goroutine1(channel)
+	go goroutine2(channel)
+
+	time.Sleep(1 * time.Second)
 	fmt.Println("end of main")
 }
 
-func printNumbers() {
-	fmt.Println("beginning of print")
-	for j := 0; j < 100; j++ {
-		fmt.Println(j)
+func goroutine1(ch chan int) {
+	for i := 1; i <= 100; i++ {
+		ch <- i
+		if i%2 == 1 {
+			fmt.Println("协程1：", i)
+		}
 	}
-	fmt.Println("end of print")
-	wg.Done()
+}
+func goroutine2(ch chan int) {
+	for i := 1; i <= 100; i++ {
+		<-ch
+		if i%2 == 0 {
+			fmt.Println("协程2：", i)
+		}
+	}
 }
